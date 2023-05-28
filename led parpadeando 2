@@ -1,0 +1,70 @@
+
+
+
+int verde1 = 8; // la salida 8 es el led verde
+int verde2 = 7;
+int rojo1 = 4;
+int rojo2 = 2;
+int boton= 12;
+void setup()
+
+
+{
+  
+
+  pinMode(boton, INPUT);
+  pinMode(verde1, OUTPUT);
+  pinMode(verde2, OUTPUT);
+  pinMode(rojo1, OUTPUT);
+  pinMode(rojo2, OUTPUT);
+} 
+
+void loop() {
+  if (digitalRead(boton) == HIGH) {
+    for (int i = 1; i <= 1; i++) { //
+      digitalWrite(verde1, HIGH);
+      delay(100);
+      digitalWrite(verde1, LOW);
+      delay(100);
+      digitalWrite(verde1, HIGH);
+      delay(100);
+      digitalWrite(verde1, LOW);
+      delay(200);
+
+      digitalWrite(rojo1, HIGH);
+      delay(100);
+      digitalWrite(rojo1, LOW);
+      delay(100);
+      digitalWrite(rojo1, HIGH);
+      delay(100);
+      digitalWrite(rojo1, LOW);
+      delay(200);
+
+      digitalWrite(verde2, HIGH);
+      delay(100);
+      digitalWrite(verde2, LOW);
+      delay(100);
+      digitalWrite(verde2, HIGH);
+      delay(100);
+      digitalWrite(verde2, LOW);
+     delay(200);
+    }//
+  } else {
+    for (int i = 1; i <= 1; i++) {//
+      digitalWrite(verde1, HIGH);
+      delay(200);
+      digitalWrite(verde1, LOW);
+      delay(200);
+      digitalWrite(rojo1, HIGH);
+      delay(200);
+      digitalWrite(rojo1, LOW);
+      delay(200);
+      digitalWrite(verde2, HIGH);
+      delay(200);
+      digitalWrite(verde2, LOW);
+
+ // Pausa adicional después de cada parpadeo
+     
+    }//
+  }
+}
