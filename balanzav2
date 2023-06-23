@@ -1,0 +1,134 @@
+#include <Wire.h>
+#include <Servo.h>
+
+///////////////////////Inputs/outputs///////////////////////
+const int Analog_in = A0;
+const int pinInterruptorP = 2;  // Pin para el interruptor Proporcional
+const int pinInterruptorI = 3;  // Pin para el interruptor Integral
+const int pinInterruptorD = 4;  // Pin para el interruptor Derivativo
+Servo myservo;  // create servo object to control a servo, later attached to D9
+//////////////////////////////////////////////////////////
+
+////////////////////////Variables///////////////////////
+float distance = 0.0;
+float distance_previous_error = 0;
+int period = 70;  // Refresh rate period of the loop is 80ms
+unsigned long previousMillis = 0;  // Variable to store the previous time
+//////////////////////////////////////////////////////////
+
+///////////////////PID constants///////////////////////
+const float kp = 5.0; // Mine was 8
+const float ki = 0.1; // Mine was 0.2
+const float kd = 3000; // Mine was 3100
+const float distance_setpoint = 19; // Should be the distance from sensor to the middle of the bar in mm 20
+//////////////////////////////////////////////////////////
+
+float PID_i = 0.0; // Integral term
+float PID_total = 0.0; // Total PID output
+float tolerance = 0.7;
+
+// Variables de estado de los botones
+bool botonAnteriorP = HIGH;
+bool botonAnteriorI = HIGH;
+bool botonAnteriorD = HIGH;
+
+// Variables para el control del botón
+bool botonPresionadoP = false;
+bool botonPresionadoI = false;
+bool botonPresionadoD = false;
+
+void setup() {
+  Serial.begin(9600);
+  myservo.attach(9);  // Attaches the servo on pin 9 to the servo object
+  myservo.write(125); // Puts the servo at angle 125, so the balance is in the middle
+  pinMode(Analog_in, INPUT);
+  pinMode(pinInterruptorP, INPUT_PULLUP);
+  pinMode(pinInterruptorI, INPUT_PULLUP);
+  pinMode(pinInterruptorD, INPUT_PULLUP);
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= period) {
+    previousMillis = currentMillis;
+
+    distance = get_dist(100);
+    float distance_error = distance_setpoint - distance;
+    float PID_p = kp * distance_error;
+    float PID_d = kd * ((distance_error - distance_previous_error) / period);
+
+    if (distance_error > -tolerance && distance_error < tolerance) {
+      PID_total = 0;
+    }
+
+    if (-0.5 < distance_error && distance_error < 0.5) {
+      PID_i += ki * distance_error;
+    } else {
+      PID_i = 0;
+    }
+
+    // Control manual de los parámetros PID
+    bool pOn = false;
+    bool iOn = false;
+    bool dOn = false;
+
+    // Detección de flanco para el botón P
+    if (botonAnteriorP == HIGH && digitalRead(pinInterruptorP) == LOW) {
+      botonPresionadoP = !botonPresionadoP;
+    }
+    botonAnteriorP = digitalRead(pinInterruptorP);
+    pOn = botonPresionadoP;
+
+    // Detección de flanco para el botón I
+    if (botonAnteriorI == HIGH && digitalRead(pinInterruptorI) == LOW) {
+      botonPresionadoI = !botonPresionadoI;
+    }
+    botonAnteriorI = digitalRead(pinInterruptorI);
+    iOn = botonPresionadoI;
+
+    // Detección de flanco para el botón D
+    if (botonAnteriorD == HIGH && digitalRead(pinInterruptorD) == LOW) {
+      botonPresionadoD = !botonPresionadoD;
+    }
+    botonAnteriorD = digitalRead(pinInterruptorD);
+    dOn = botonPresionadoD;
+
+    PID_total = 0;
+    if (pOn) {
+      PID_total += PID_p;
+    }
+    if (iOn) {
+      PID_total += PID_i;
+    }
+    if (dOn) {
+      PID_total += PID_d;
+    }
+
+    PID_total = constrain(PID_total, -150, 150);
+    PID_total = map(PID_total, -150, 150, 0, 150);
+    PID_total = constrain(PID_total, 20, 160);
+
+    myservo.write(PID_total + 30);
+    distance_previous_error = distance_error;
+  }
+
+  // Imprimir la distancia en el monitor serial
+  Serial.print("Distance: ");
+  Serial.print(distance);
+  Serial.println(" cm");
+}
+
+float get_dist(int n) {
+  long sum = 0;
+  for (int i = 0; i < n; i++) {
+    sum = sum + analogRead(Analog_in);
+  }  
+  float adc = sum / n;
+
+  float distance_cm = 17569.7 * pow(adc, -1.2000);
+  
+  // Ajustar la distancia para que coincida con distance_setpoint
+  float adjusted_distance = distance_cm ;
+
+  return adjusted_distance;
+}
