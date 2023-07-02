@@ -1,9 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Jul  2 10:38:49 2023
+
+@author: tenor
+"""
+
 import pyautogui
 import time
 import keyboard
 
 
-pyautogui.moveTo(1483, 7)
+pyautogui.moveTo(1318, 806)
 time.sleep(6)
 pyautogui.click()
 
@@ -11,24 +18,165 @@ def publibot():
 
 
 
-    pyautogui.moveTo(535, 831)
-    time.sleep(3)
-    pyautogui.click()
+
+    time.sleep(1)
+
     
     
     
     
 
     import random
-    Publicaciones = ["❤❤❤❤❤❤Hola amor, como estas, que tal tu dia, yo estoy bien, estoy descansando, y tu ya comiste, te has cansado mucho, yo siempre estoy pensando en ti❤❤❤❤❤❤❤❤", "Hola corazon, solo quise recordarte que tu eres una persona maravillosa, gracias por permitirme hacer mi intento de conquistarte, te lo prometo que te sorprenderas dia a dia, simplemente quiero que recuerdes que hay una persona que simpre se acuerda de ti", "💗💗💗💗Hola corazon,💗💗💗💗💗💗 quiero que sepas que te quiero mucho y que hare todo lo posible por recordartelo y hacertelo saber porque tu eres una de las personas que mas quiero, que te amo,💖💖💖💖💖💖💖 que me vuelves loco, simplemente te amo,", "😍😍😍Hola amor😍😍😍","como estas amor", "💌💌💌💌💌sabias que siempre estoy pensando en ti💌💌💌💌💌","💞💞💞💞te amor mi vida nunca lo olvides💞💞💞💞","❤❤que tal tu dia como te va, ya comiste❤❤","❤hola amor❤", "💕hola amor quiero que sepas que te quiero mucho💕","😀hola amor, a lo mejor no te contesto pero quiero que sepas que te amo😀", "😍😍Hola corazon, sabes hoy estube pensando mucho en ti😍😍","♥ Soy la persona más feliz del mundo cuando me dices hola o me sonríes porque sé que aunque haya sido para solo un segundo, has pensado en mi", "♥ Si sumas todas las estrellas del cielo, todos los granitos de arena en los océanos, todas las rosas en el mundo y todas las sonrisas que haya habido en la historia del mundo, empezarás a tener una idea de cuánto te quiero","♥ Anoche miré al cielo y empecé a dar a cada estrella una razón por la que te quiero tanto. Me faltaron estrellas","♥ Aunque no sepa quererte de la forma que a ti te gustaría, siempre te querré con toda mi corazón de la mejor forma que sepa","♥ Eres la manera que tiene el mundo de decirme lo bonita que es la vida.","Desearía poder hablarte, desearía poder sonreírte, desearía poder abrazarte, pero sobre todo desearía poder besarte.","Unos ojos que jamás me cansaré de mirar, unos labios que siempre querré besar, pero lo mejor de todo, un corazón que jamás dejaré de amar","Hola mi vida, te amor","https://www.xn--lasimgenesdeamor-jmb.com/wp-content/uploads/2017/04/Imagenes-de-amor-me-encanta-tu-sonrrisa.jpg","https://www.xn--lasimgenesdeamor-jmb.com/wp-content/uploads/2017/04/Imagenes-de-amor-para-enviar-por-messenger.jpg,","https://i.pinimg.com/originals/3b/a5/d6/3ba5d642711ccc63f61c6ece6ce5bc67.png","Hola amor te quiero mucho","https://tenor.com/WeeS.gif","https://tenor.com/bfsWK.gif","https://tenor.com/9kUc.gif","https://tenor.com/bjImU.gif","https://scontent.frex1-1.fna.fbcdn.net/v/t1.6435-9/163722920_930692697691231_5157448569331462252_n.jpg?_nc_cat=103&ccb=1-3&_nc_sid=09cbfe&_nc_ohc=QAfDtu0EVRkAX9rGX8Y&_nc_ht=scontent.frex1-1.fna&oh=13696caf559ec3954b5e61c3d0c64b08&oe=6090FFEE","https://scontent.frex1-1.fna.fbcdn.net/v/t1.6435-9/103056394_734790153948154_4812750337552215222_n.jpg?_nc_cat=103&ccb=1-3&_nc_sid=174925&_nc_ohc=r3WZ47xaA4cAX8NyENS&_nc_ht=scontent.frex1-1.fna&oh=a8337bc054581f32a004cc17b330b777&oe=6094508A"]
+    Publicaciones = ["Querido Leo, en este día experimentarás una conexión especial con Libra. Su encanto y elegancia te cautivarán, y su naturaleza equilibrada te atraerá como un imán. Permítete explorar esta conexión y descubrirás una nueva dimensión en tu vida amorosa. Juntos, pueden crear una relación llena de armonía, pasión y equilibrio. Abre tu corazón y deja que el amor florezca entre ambos.", 
+"❤Tu amor ilumina cada rincón oscuro de mi ser. Eres mi luz en los momentos más difíciles y mi inspiración constante.❤",
+"Tu presencia es mi refugio seguro. En tus brazos encuentro consuelo y amor incondicional.",
+"❤❤❤❤❤❤Hola amor, como estas, que tal tu dia, yo estoy bien, estoy descansando, y tu ya comiste, como te  ha ido, yo siempre estoy pensando en ti❤❤❤❤❤❤❤❤",
+"❤❤❤❤❤❤Hola amor, como estas, que tal tu dia, yo estoy bien, estoy descansando, y tu ya comiste, como te  ha ido, yo siempre estoy pensando en ti❤❤❤❤❤❤❤❤", 
+"❤❤❤❤❤❤Hola amor, como estas, que tal tu dia, yo estoy bien, estoy descansando, y tu ya comiste, como te  ha ido, yo siempre estoy pensando en ti❤❤❤❤❤❤❤❤", 
+"Hola corazon, solo quise recordarte que tu eres una persona maravillosa, gracias por permitirme hacer mi intento de conquistarte, te lo prometo que te sorprenderas dia a dia, simplemente quiero que recuerdes que hay una persona que simpre se acuerda de ti", 
+"💗💗💗💗Hola corazon,💗💗💗💗💗💗 quiero que sepas que te quiero mucho y que hare todo lo posible por recordartelo y hacertelo saber porque tu eres una de las personas que mas quiero, que te amo,💖💖💖💖💖💖💖 que me vuelves loco, simplemente te amo,", 
+"😍😍😍Hola amor😍😍😍","como estas amor", "💌💌💌💌💌sabias que siempre estoy pensando en ti💌💌💌💌💌","💞💞💞💞te amor mi vida nunca lo olvides💞💞💞💞",
+"❤❤que tal tu dia como te va, ya comiste❤❤",
+"❤hola amor❤", 
+"💕hola amor quiero que sepas que te quiero mucho💕",
+"😀hola amor, a lo mejor no te contesto pero quiero que sepas que te amo😀", 
+"😍😍Hola corazon, sabes hoy estube pensando mucho en ti😍😍",
+"♥ Soy la persona más feliz del mundo cuando me dices hola o me sonríes porque sé que aunque haya sido para solo un segundo, has pensado en mi", 
+"♥Eres la razón por la que sonrío todos los días. Te amo más de lo que las palabras pueden expresar",
+"♥ Mi amor por ti crece con cada latido de mi corazón. Eres mi todo, mi mundo y mi vida entera",
+"♥ Aunque no sepa quererte de la forma que a ti te gustaría, siempre te querré con todo mi corazón de la mejor forma que sepa",
+"♥ Eres la manera que tiene el mundo de decirme lo bonita que es la vida.",
+"Desearía poder hablarte, desearía poder sonreírte, desearía poder abrazarte, pero sobre todo desearía poder besarte.",
+"Unos ojos que jamás me cansaré de mirar, unos labios que siempre querré besar, pero lo mejor de todo, un corazón que jamás dejaré de amar",
+"Hola mi vida, te amor","que tal tu dia como te va",
+"o caigo mal","Gracias por ayudarme a salir del hollo",
+"Hola amor te quiero mucho",
+"Sabias que eres la persona mas linda y perfecta del mundo",
+"Podran haber miles de opciones para elegir, pero yo siempre te elgiria a ti",
+"Yo se que no soy el hombre perfecto que necesitas pero pondre todo de mi parte para poder hacerte feliz",
+"hola hola, como estas, que estas haciendo",
+"Nunca nadie pudo hacer sentirme como hoy, quedate conmigo amor, yo te quiero y vivire yo siempre amandote haces mi vida hermosa, cada dia de mi vida esta lleno de ti, amandote yo veo el sol brillar mi amor, cada vez que te beso, te quiero mas mucho mas mi amor",
+"Cae la noche y amanece en París, En el día en que todo ocurrió, Como un sueño de loco sin fin, La fortuna se ha reído de ti ",
+"Querido/a [nombre], cada vez que nuestras miradas se cruzan, siento cómo el tiempo se detiene y mi corazón late con fuerza. Eres la persona que ilumina mi mundo y llena mis pensamientos en cada instante.",
+"❤️ Cada día encuentro nuevas razones para amarte. Tu sonrisa, tu ternura y tu bondad hacen que mi corazón se desborde de amor. Eres mi inspiración y mi razón de ser. ❤️",
+"En tu presencia, el mundo se vuelve un lugar mágico. Tu amor es mi refugio y mi fortaleza. No hay palabras suficientes para expresar lo que siento por ti, pero quiero que sepas que siempre estás en mis pensamientos y en mi corazón.",
+"❤️❤️❤️ Hola, mi amor. Quiero que sepas que cada latido de mi corazón lleva tu nombre. Estoy aquí, pensando en ti, esperando el momento en que nuestros caminos se crucen de nuevo. Eres lo más importante para mí. ❤️❤️❤️",
+"❤️❤️❤️ Hola, mi amor. Quiero que sepas que cada latido de mi corazón lleva tu nombre. Estoy aquí, pensando en ti, esperando el momento en que nuestros caminos se crucen de nuevo. Eres lo más importante para mí. ❤️❤️❤️",
+"❤️❤️❤️ Hola, mi amor. Quiero que sepas que cada latido de mi corazón lleva tu nombre. Estoy aquí, pensando en ti, esperando el momento en que nuestros caminos se crucen de nuevo. Eres lo más importante para mí. ❤️❤️❤️",
+"Hola, mi corazón. Quiero recordarte lo maravillosa que eres. Cada día a tu lado es un regalo, y prometo sorprenderte en cada instante. Siempre estoy pensando en ti y en cómo hacer que nuestra historia de amor sea inolvidable.",
+"💗💗💗 Hola, mi corazón. Quiero que sepas que te quiero con locura y haré todo lo posible para recordártelo cada día. Eres una de las personas más importantes en mi vida, te amo con todo mi ser y eres mi mayor inspiración. 💗💗💗",
+"😍😍😍 Hola, amor. Cada vez que escucho tu voz o veo tu sonrisa, mi corazón se llena de alegría. Eres la persona que ilumina mi mundo y llena mis días de felicidad. Siempre estás en mis pensamientos y en mi corazón. 😍😍😍",
+"Hola, amor. ¿Cómo estás? Quiero que sepas que cada segundo que pasa, mi amor por ti crece más y más. Eres el sueño hecho realidad que nunca supe que tenía. Siempre estoy pensando en ti, esperando el momento en que estemos juntos de nuevo.",
+"💌💌💌💌💌 Sabías que siempre estás en mis pensamientos? Cada día, cada hora, cada minuto. Eres el dueño/a de mi corazón y mi pensamiento constante. Te extraño y deseo estar contigo en cada momento de mi vida. 💌💌💌💌💌",
+"💞💞💞💞 Te amo con todo mi ser, mi vida. Nunca olvides que eres mi razón de ser y que siempre estoy aquí para ti. Eres la persona más especial en mi vida y cada día mi amor por ti crece más y más. 💞💞💞💞",
+"❤️❤️ ¿Cómo ha sido tu día? Quiero saber de ti, cada detalle, cada pensamiento. Tu bienestar es mi prioridad y siempre estoy pensando en ti. Eres el sol que ilumina mi camino y la razón de mi felicidad. ❤️❤️",
+"❤️ Hola, amor. Solo quería recordarte lo importante que eres para mí. Tu amor y apoyo me dan fuerzas para seguir adelante cada día. Eres mi refugio seguro y te quiero con todo mi corazón. ❤️",
+"💕 Hola, amor. Quiero que sepas que te quiero más de lo que las palabras pueden expresar. Eres mi sueño hecho realidad y cada día a tu lado es un regalo. Siempre estoy pensando en ti y deseando estar a tu lado. 💕",
+"😀 Hola, amor. Aunque a veces no pueda responder de inmediato, quiero que sepas que siempre estás en mis pensamientos. Eres la persona que da sentido a mi vida y te amo con todo mi ser. 😀",
+"😍😍 Hola, mi corazón. Hoy estuve pensando mucho en ti, en nuestros momentos juntos y en el amor que compartimos. Eres el regalo más preciado que la vida me ha dado, y siempre te llevaré en mis pensamientos. 😍😍",
+"♥️ Eres la persona que ilumina mi vida con cada palabra y cada sonrisa. Cada vez que pienso en ti, mi corazón se llena de alegría y gratitud. Eres mi razón de ser y te amo más de lo que puedo expresar. ♥️",
+"♥️ Eres la razón por la que sonrío cada día. Tu amor me da fuerzas para seguir adelante y enfrentar cualquier desafío. Eres mi todo, mi mundo y mi vida entera. ♥️",
+"♥️ Mi amor por ti crece con cada latido de mi corazón. Eres la persona más especial en mi vida y te amaré de la mejor forma que sepa. Siempre estás en mis pensamientos y en mis sueños. ♥️",
+"♥️ Eres la manera en que el mundo me dice lo hermosa que es la vida. Cada momento a tu lado es una bendición y siempre te llevo en mis pensamientos y en mi corazón. ♥️",
+"Desearía poder hablarte, desearía poder sonreírte, desearía poder abrazarte, pero sobre todo, desearía poder besarte. Eres el sueño que quiero hacer realidad y siempre estás en mis pensamientos.",
+"Unos ojos que nunca me cansaré de mirar, unos labios que siempre querré besar, pero lo mejor de todo, un corazón que jamás dejaré de amar. Eres mi todo y siempre estás en mis pensamientos.",
+"Hola, mi vida. Quiero que sepas que te amo con todo mi corazón. Cada día a tu lado es un regalo y siempre estoy pensando en ti. Eres el motivo de mi felicidad y mi mayor inspiración.",
+"¿Cómo ha sido tu día? Espero que todo esté yendo bien. Quiero que sepas que siempre estás en mis pensamientos y en mi corazón. Eres una persona maravillosa y te quiero mucho.",
+"Sabías que eres la persona más linda y perfecta del mundo. Cada vez que pienso en ti, mi corazón se llena de alegría y gratitud. Eres el sueño que nunca quiero despertar.",
+"Podrán haber miles de opciones en el mundo, pero siempre te elegiría a ti. Tu amor me completa y eres la persona que quiero tener a mi lado siempre. Siempre pienso en ti y en nuestro futuro juntos.",
+"Sé que no soy el hombre perfecto que necesitas, pero prometo poner todo de mi parte para hacerte feliz. Siempre estaré aquí, pensando en ti y amándote con todo mi ser.",
+"Hola, hola. ¿Cómo estás? ¿Qué estás haciendo en este momento? Quiero que sepas que siempre estoy pensando en ti y que eres la persona más importante en mi vida.",
+"Nadie ha logrado hacerme sentir como tú lo haces. Quédate conmigo, amor, porque eres mi vida y te amo con todo mi ser. Cada día a tu lado es un regalo y siempre estaré aquí, amándote.",
+"Cae la noche y amanece en París, en el día en que todo ocurrió. Eres mi fortuna, mi suerte y mi razón de ser. Siempre estás en mis pensamientos y en cada latido de mi corazón.",]
 
     aleatorio = random.choice(Publicaciones)
     print(aleatorio)
 
     keyboard.write(aleatorio)
-    time.sleep(3)
+    time.sleep(1)
     pyautogui.press("enter")
 
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
+publibot()
 publibot()
 publibot()
 publibot()
