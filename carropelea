@@ -1,0 +1,120 @@
+// Declaración de constantes para los pines
+const int MA1 = 8;
+const int MA2 = 9;
+const int MB1 = 10;
+const int MB2 = 11;
+const int Faros = 13;
+const int Frenos = 7;
+const int Claxon = 6;
+
+char valor; // Variable que se recibe del bluetooth
+
+// Configuración inicial del Arduino
+void setup() {
+  Serial.begin(9600); // Inicio de la comunicación Serial del Arduino
+
+  // Declaración de pines de Entradas y Salidas del arduino
+  pinMode(MA1, OUTPUT);
+  pinMode(MA2, OUTPUT);
+  pinMode(MB1, OUTPUT);
+  pinMode(MB2, OUTPUT);
+  pinMode(Faros, OUTPUT);
+  pinMode(Frenos, OUTPUT);
+  pinMode(Claxon, OUTPUT);
+}
+
+// Inicio del ciclo del programa
+void loop() {
+  if (Serial.available()) {
+    valor = Serial.read(); // Guarda el Valor recibido en la variable "valor"
+    Serial.println(valor); // Imprime en el monitor Serie "valor"
+    procesarComando(valor);
+  }
+}
+
+// Función para procesar los comandos recibidos
+void procesarComando(char comando) {
+  switch (comando) {
+    case 'S':
+      alto();
+      break;
+    case 'F':
+      frente();
+      break;
+    case 'B':
+      atras();
+      break;
+    case 'L':
+      izquierda();
+      break;
+    case 'R':
+      derecha();
+      break;
+    case 'w':
+      encenderApagar(Faros);
+      break;
+    case 'W':
+      encenderApagar(Faros);
+      break;
+    case 'u':
+      encenderApagar(Frenos);
+      break;
+    case 'U':
+      encenderApagar(Frenos);
+      break;
+    case 'v':
+      encenderApagar(Claxon);
+      break;
+    case 'V':
+      encenderApagar(Claxon);
+      break;
+    default:
+      // Comando no reconocido, aquí puedes enviar una respuesta o ignorarlo.
+      break;
+  }
+}
+
+// Función para mover el carro hacia adelante
+void frente() {
+  digitalWrite(MA1, HIGH);
+  digitalWrite(MA2, LOW);
+  digitalWrite(MB1, HIGH);
+  digitalWrite(MB2, LOW);
+}
+
+// Función para mover el carro hacia atrás
+void atras() {
+  digitalWrite(MA1, LOW);
+  digitalWrite(MA2, HIGH);
+  digitalWrite(MB1, LOW);
+  digitalWrite(MB2, HIGH);
+}
+
+// Función para mover el carro hacia la izquierda
+void izquierda() {
+  digitalWrite(MA1, LOW);
+  digitalWrite(MA2, HIGH);
+  digitalWrite(MB1, HIGH);
+  digitalWrite(MB2, LOW);
+}
+
+// Función para mover el carro hacia la derecha
+void derecha() {
+  digitalWrite(MA1, HIGH);
+  digitalWrite(MA2, LOW);
+  digitalWrite(MB1, LOW);
+  digitalWrite(MB2, HIGH);
+}
+
+// Función para detener el carro
+void alto() {
+  digitalWrite(MA1, LOW);
+  digitalWrite(MA2, LOW);
+  digitalWrite(MB1, LOW);
+  digitalWrite(MB2, LOW);
+}
+
+// Función para encender o apagar luces, frenos y claxon
+void encenderApagar(int pin) {
+  digitalWrite(pin, !digitalRead(pin)); // Cambia el estado del pin (encendido/apagado)
+}
