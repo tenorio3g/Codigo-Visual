@@ -1,0 +1,89 @@
+import pygame
+import serial
+
+# Configuración de Pygame
+pygame.init()
+ventana = pygame.display.set_mode((1200, 400))
+pygame.display.set_caption("Resultados")
+
+
+
+
+# Inicializa el mezclador de sonido de Pygame
+pygame.mixer.init()
+
+# Crea un diccionario que mapea combinaciones de valores a archivos de sonido
+sonidos = {
+    "11110": pygame.mixer.Sound("hola.mp3"),
+    "11100": pygame.mixer.Sound("adios.mp3"),
+    "11111": pygame.mixer.Sound("Esperando.mp3"),
+    # Agrega más combinaciones y sonidos según tus necesidades
+}
+
+
+
+# Cargar la imagen de fondo
+fondo = pygame.image.load("fona.jpg")
+if fondo is None:
+    print("No se pudo cargar la imagen de fondo.")
+
+# Escalar la imagen de fondo al tamaño de la ventana
+fondo = pygame.transform.scale(fondo, (ventana.get_width(), ventana.get_height()))
+
+# Establece el puerto serial correcto (comprueba en tu IDE de Arduino)
+puerto_serial = 'COM12'  # Reemplaza 'COMX' con el puerto serial correcto
+
+# Configura la conexión serial
+ser = serial.Serial(puerto_serial, 9600)  # 9600 es la velocidad de comunicación
+
+def extraer_valores(datos):
+    # Filtra los dígitos en los datos y los une en una cadena
+    valores = ''.join(filter(str.isdigit, datos))
+    return valores
+
+while True:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            pygame.quit()
+            quit()
+
+    # Limpia la ventana con el color de fondo (en este caso, negro)
+    ventana.fill((0, 0, 0))
+
+    # Dibuja el fondo primero
+    ventana.blit(fondo, (0, 0))
+
+    # Lee una línea de datos desde Arduino
+    linea_datos = ser.readline().decode().strip()  # Decodifica la línea y elimina espacios en blanco
+
+    # Imprime solo los valores numéricos
+    valores = extraer_valores(linea_datos)
+
+    # Lógica para mostrar mensajes en la ventana de Pygame
+    mensaje = ""
+    if valores == "11110":
+        mensaje = "Hola"
+        # Reproduce el sonido correspondiente
+        sonidos["11110"].play()
+    elif valores == "11100":
+        mensaje = "Adiós"
+        # Reproduce el sonido correspondiente
+        sonidos["11100"].play()
+        
+    elif valores == "11111":
+        mensaje = "Esperando señas"
+        # Reproduce el sonido correspondiente
+        sonidos["11111"].play()
+        
+        
+        
+    elif valores == "11112":  # Ajusta las condiciones según tus necesidades
+        mensaje = "Otro mensaje"  # Cambia el mensaje según corresponda
+
+    # Dibuja el mensaje en la ventana
+    fuente = pygame.font.Font(None, 166)
+    texto = fuente.render(mensaje, True, (255, 255, 255))  # Color blanco
+    ventana.blit(texto, (100, 100))  # Posición de renderizado del mensaje
+
+    # Actualiza la ventana
+    pygame.display.update()
