@@ -1,0 +1,171 @@
+import pygame
+import serial
+import win32gui
+import win32con
+import sys
+
+# Configuración de Pygame
+pygame.init()
+ventana = pygame.display.set_mode((1200, 600), pygame.NOFRAME)# Agrega pygame.NOFRAME para una ventana sin bordes
+pygame.display.set_caption("Resultados")
+# Establece la ventana en nivel superior (solo para Windows)
+hwnd = pygame.display.get_wm_info()['window']
+win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+
+
+
+
+
+
+
+
+# Inicializa el mezclador de sonido de Pygame
+pygame.mixer.init()
+
+# Crea un diccionario que mapea combinaciones de valores a archivos de sonido
+sonidos = {
+    "11110": pygame.mixer.Sound("hola.mp3"),
+    "11100": pygame.mixer.Sound("adios.mp3"),
+    "11111": pygame.mixer.Sound("Esperando.mp3"),
+    # Agrega más combinaciones y sonidos según tus necesidades
+}
+
+
+
+# Inicializa una bandera para controlar la reproducción de sonidos
+sonido_actual = None
+
+
+
+# Cargar la imagen de fondo
+fondo = pygame.image.load("fona.jpg")
+if fondo is None:
+    print("No se pudo cargar la imagen de fondo.")
+
+# Escalar la imagen de fondo al tamaño de la ventana
+fondo = pygame.transform.scale(fondo, (ventana.get_width(), ventana.get_height()))
+
+# Establece el puerto serial correcto (comprueba en tu IDE de Arduino)
+puerto_serial = 'COM8'  # Reemplaza 'COMX' con el puerto serial correcto
+
+# Configura la conexión serial
+ser = serial.Serial(puerto_serial, 9600)  # 9600 es la velocidad de comunicación
+
+def extraer_valores(datos):
+    # Filtra los dígitos en los datos y los une en una cadena
+    valores = ''.join(filter(str.isdigit, datos))
+    return valores
+
+
+
+while True:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            ser.close()  # Cierra la conexión serial
+            pygame.quit()
+            sys.exit()  # Cierra la aplicación por completo
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                ser.close()  # Cierra la conexión serial
+                pygame.quit()
+                sys.exit()  # Cierra la aplicación por completo
+
+    # Limpia la ventana con el color de fondo (en este caso, negro)
+    ventana.fill((0, 0, 0))
+
+    # Dibuja el fondo primero
+    ventana.blit(fondo, (0, 0))
+
+    # Lee una línea de datos desde Arduino
+    linea_datos = ser.readline().decode().strip()  # Decodifica la línea y elimina espacios en blanco
+
+    # Imprime solo los valores numéricos
+    valores = extraer_valores(linea_datos)
+    
+    # Imprime la línea de datos en la consola
+    print("Datos recibidos desde Arduino:", linea_datos)
+
+    # Lógica para mostrar mensajes en la ventana de Pygame
+    mensaje = ""
+    if valores == "11110":
+        mensaje = "Meñique"
+        # Detiene el sonido actual si lo hay
+        if sonido_actual is not None:
+            sonidos[sonido_actual].stop()
+        # Reproduce el sonido correspondiente
+        sonidos["11110"].play()
+        sonido_actual = "11111"  # Actualiza el sonido actual
+        
+        
+    elif valores == "11101":
+     mensaje = "Anular"
+     # Detiene el sonido actual si lo hay
+     if sonido_actual is not None:
+         sonidos[sonido_actual].stop()
+     # Reproduce el sonido correspondiente
+     sonidos["11111"].play()
+     sonido_actual = "11111"  # Actualiza el sonido actual
+       
+    elif valores == "11011":
+     mensaje = "Medio."
+     # Detiene el sonido actual si lo hay
+     if sonido_actual is not None:
+         sonidos[sonido_actual].stop()
+     # Reproduce el sonido correspondiente
+     sonidos["11111"].play()
+     sonido_actual = "11111"  # Actualiza el sonido actual
+         
+         
+    elif valores == "10111":
+     mensaje = "Indice"
+     # Detiene el sonido actual si lo hay
+     if sonido_actual is not None:
+         sonidos[sonido_actual].stop()
+     # Reproduce el sonido correspondiente
+     sonidos["11111"].play()
+     sonido_actual = "11111"  # Actualiza el sonido actual
+             
+    elif valores == "01111":
+     mensaje = "Pulgar"
+     # Detiene el sonido actual si lo hay
+     if sonido_actual is not None:
+         sonidos[sonido_actual].stop()
+     # Reproduce el sonido correspondiente
+     sonidos["11111"].play()
+     sonido_actual = "11111"  # Actualiza el sonido actual
+    
+    
+    
+    
+    elif valores == "11111":
+        mensaje = "Esperando señas..."
+        # Detiene el sonido actual si lo hay
+        if sonido_actual is not None:
+            sonidos[sonido_actual].stop()
+        # Reproduce el sonido correspondiente
+        sonidos["11111"].play()
+        sonido_actual = "11111"  # Actualiza el sonido actual
+        
+        
+        
+        
+        
+    elif valores == "11100":  # Ajusta las condiciones según tus necesidades
+        mensaje = "Otro mensaje"  # Cambia el mensaje según corresponda
+
+    # Dibuja el mensaje en la ventana
+    fuente = pygame.font.Font(None, 146)
+    texto = fuente.render(mensaje, True, (255, 255, 0))  # Color blanco
+    ventana.blit(texto, (100, 250))  # Posición de renderizado del mensaje
+
+    # Actualiza la ventana
+    pygame.display.update()
+    
+    
+    # Añade estas líneas al final para cerrar la ventana y el puerto serial
+pygame.quit()
+ser.close()
+sys.exit()
+
+    
