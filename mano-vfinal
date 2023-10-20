@@ -1,0 +1,216 @@
+import pygame
+import serial
+import win32gui
+import win32con
+import sys
+
+# Configuración de Pygame
+pygame.init()
+ventana = pygame.display.set_mode((1200, 600), pygame.NOFRAME)  # Agrega pygame.NOFRAME para una ventana sin bordes
+pygame.display.set_caption("Resultados")
+# Establece la ventana en nivel superior (solo para Windows)
+hwnd = pygame.display.get_wm_info()['window']
+win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
+
+# Inicializa el mezclador de sonido de Pygame
+pygame.mixer.init()
+
+# Crea un diccionario que mapea combinaciones de valores a archivos de sonido
+sonidos = {
+    "11110": pygame.mixer.Sound("i.mp3"),
+    "11111": pygame.mixer.Sound("Esperando.mp3"),
+    "10001": pygame.mixer.Sound("y.mp3"),
+    "01000": pygame.mixer.Sound("d.mp3"),
+    "10000": pygame.mixer.Sound("a.mp3"),
+    "11000": pygame.mixer.Sound("g.mp3"),
+    "11100": pygame.mixer.Sound("h.mp3"),
+    "01111": pygame.mixer.Sound("b.mp3"),
+    "10111": pygame.mixer.Sound("f.mp3"),
+    "01100": pygame.mixer.Sound("n.mp3"),
+    "00000": pygame.mixer.Sound("s.mp3"),
+    "01110": pygame.mixer.Sound("m.mp3"),
+    "hola": pygame.mixer.Sound("hola.mp3"),
+    "indice": pygame.mixer.Sound("indice.mp3"),
+    "yo": pygame.mixer.Sound("yo.mp3"),
+    "gracias": pygame.mixer.Sound("gracias.mp3"),
+    "denada": pygame.mixer.Sound("denada.mp3"),
+    "mellamo": pygame.mixer.Sound("mellamo.mp3"),
+    "minombre": pygame.mixer.Sound("minombre.mp3"),
+    
+    # Agrega más combinaciones y sonidos según tus necesidades
+}
+
+# Inicializa una bandera para controlar la reproducción de sonidos
+sonido_actual = None
+
+# Cargar la imagen de fondo
+fondo = pygame.image.load("fona.jpg")
+if fondo is None:
+    print("No se pudo cargar la imagen de fondo.")
+
+# Escalar la imagen de fondo al tamaño de la ventana
+fondo = pygame.transform.scale(fondo, (ventana.get_width(), ventana.get_height()))
+
+# Establece el puerto serial correcto (comprueba en tu IDE de Arduino)
+puerto_serial = 'COM12'  # Reemplaza 'COMX' con el puerto serial correcto
+
+# Configura la conexión serial
+ser = serial.Serial(puerto_serial, 9600)  # 9600 es la velocidad de comunicación
+
+def extraer_valores(datos):
+    # Filtra los dígitos en los datos y los une en una cadena
+    valores = ''.join(filter(str.isdigit, datos))
+    return valores
+
+# Inicializa una bandera para controlar el modo (letra o palabra)
+modo_letra = True
+mensaje = ""
+sonido_key = None  # Agrega esta línea  
+while True:
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            ser.close()  # Cierra la conexión serial
+            pygame.quit()
+            sys.exit()  # Cierra la aplicación por completo
+
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_ESCAPE:
+                ser.close()  # Cierra la conexión serial
+                pygame.quit()
+                sys.exit()  # Cierra la aplicación por completo
+            if evento.key == pygame.K_SPACE:
+                modo_letra = not modo_letra  # Alterna entre modo "letra" y modo "palabra"
+
+    # Limpia la ventana con el color de fondo (en este caso, negro)
+    ventana.fill((0, 0, 0))
+
+    # Dibuja el fondo primero
+    ventana.blit(fondo, (0, 0))
+
+    # Lee una línea de datos desde Arduino
+    linea_datos = ser.readline().decode().strip()  # Decodifica la línea y elimina espacios en blanco
+
+    # Imprime solo los valores numéricos
+    valores = extraer_valores(linea_datos)
+    
+    # Imprime la línea de datos en la consola
+    print("Datos recibidos desde Arduino:", linea_datos)
+
+    # Lógica para mostrar mensajes en la ventana de Pygame
+    fuente = pygame.font.Font(None, 146)
+    color_letra = (255, 255, 0)
+    pos_x = 100  # Posición inicial en el eje X
+    pos_y = 250  # Posición en el eje Y
+
+    if modo_letra:
+        # Lógica para mostrar letras
+        if valores == "11110":
+            mensaje = "i"
+            sonido_key = "11110"
+            
+        elif valores == "10000":
+            mensaje = "A"
+            sonido_key = "10000"
+            
+        elif valores == "01111":
+            mensaje = "B"
+            sonido_key = "01111"
+           
+        elif valores == "01000":
+            mensaje = "D"
+            sonido_key = "01000"
+            
+        elif valores == "10111":
+            mensaje = "f"
+            sonido_key = "10111"
+            
+        elif valores == "11000":
+            mensaje = "G"
+            sonido_key = "11000"
+            
+        elif valores == "11100":
+            mensaje = "H"
+            sonido_key = "11100"
+            
+        elif valores == "01110":
+            mensaje = "M"
+            sonido_key = "01110"
+            
+        elif valores == "01100":
+            mensaje = "N"
+            sonido_key = "01100"
+            
+        elif valores == "00000":
+            mensaje = "S"
+            sonido_key = "00000"
+           
+        elif valores == "10001":
+            mensaje = "Y"
+            sonido_key = "10001"
+            
+        elif valores == "11111":
+            mensaje = "Esperando señales .."
+            sonido_key = "11111"
+
+            
+
+            
+            
+
+        # Otras condiciones para mostrar letras
+    else:
+        # Lógica para mostrar palabras
+        if valores == "11011":
+            mensaje = "Gracias"
+            sonido_key = "gracias"
+        elif valores == "11110":
+            mensaje = "indice"
+            sonido_key = "indice"
+        elif valores == "11111":
+            mensaje = "Esperando señales .."
+            sonido_key = "11111"
+            
+        elif valores == "10001":
+            mensaje = "Yo"
+            sonido_key = "yo"
+            
+        elif valores == "11100":
+            mensaje = "hola"
+            sonido_key = "hola"
+            
+        elif valores == "10000":          
+            mensaje = "de nada"
+            sonido_key = "denada"
+            
+        elif valores == "01100":          
+            mensaje = "me llamo"
+            sonido_key = "mellamo"
+            
+        elif valores == "00001":          
+            mensaje = "Fortunato Tenorio Garcia"
+            sonido_key = "minombre"
+        # Agrega más condiciones para más palabras aquí
+
+    # Detiene el sonido actual si lo hay y reproduce el sonido correspondiente
+    if sonido_key is not None:
+        if sonido_actual is not None:
+            sonidos[sonido_actual].stop()
+        sonidos[sonido_key].play()
+        sonido_actual = sonido_key  # Actualiza el sonido actual
+
+    # Dibuja el mensaje en la ventana
+    texto = fuente.render(mensaje, True, color_letra)  # Color blanco
+    ventana.blit(texto, (pos_x, pos_y))  # Posición de renderizado del mensaje
+
+    # Actualiza la posición de la letra
+    pos_x += 50  # Ajusta la velocidad de movimiento
+    if pos_x > ventana.get_width():
+        pos_x = -fuente.size(mensaje)[0]  # Reinicia la posición cuando llega al final de la ventana
+
+    # Actualiza la ventana
+    pygame.display.update()
+
+# Añade estas líneas al final para cerrar la ventana y el puerto serial
+pygame.quit()
+ser.close()
+sys.exit()
