@@ -1,0 +1,12 @@
+private void btnRetroceso_Click(object sender, EventArgs e)
+{
+    if (textBox1.Text.Length > 0)
+    {
+        textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1);
+    }
+}
+
+private void btnCE_Click(object sender, EventArgs e)
+{
+    textBox1.Clear();
+}
