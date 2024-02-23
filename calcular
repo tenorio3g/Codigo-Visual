@@ -1,0 +1,45 @@
+private void btnIgual_Click(object sender, EventArgs e)
+{
+    // Verifica si hay un número en el cuadro de texto
+    if (!string.IsNullOrEmpty(textBox1.Text))
+    {
+        // Divide el contenido del cuadro de texto en una matriz de cadenas usando el símbolo de suma como delimitador
+        string[] numeros = textBox1.Text.Split('+');
+        
+        // Verifica si hay al menos dos números para realizar la suma
+        if (numeros.Length >= 2)
+        {
+            // Declara una variable para almacenar el resultado de la suma
+            decimal resultado = 0;
+            
+            // Itera sobre los números y realiza la suma
+            foreach (string numero in numeros)
+            {
+                // Intenta convertir cada número en decimal y agregarlo al resultado
+                decimal numeroDecimal;
+                if (decimal.TryParse(numero, out numeroDecimal))
+                {
+                    resultado += numeroDecimal;
+                }
+                else
+                {
+                    // Maneja el caso en el que uno de los números no sea válido
+                    // Puedes mostrar un mensaje de error o manejarlo de otra manera según tus necesidades
+                }
+            }
+            
+            // Muestra el resultado en el cuadro de texto
+            textBox1.Text = resultado.ToString();
+        }
+        else
+        {
+            // No hay suficientes números para realizar la suma
+            // Puedes mostrar un mensaje de error o manejarlo de otra manera según tus necesidades
+        }
+    }
+    else
+    {
+        // No hay ningún número en el cuadro de texto
+        // Puedes mostrar un mensaje de error o manejarlo de otra manera según tus necesidades
+    }
+}
