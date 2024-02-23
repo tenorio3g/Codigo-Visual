@@ -1,0 +1,48 @@
+private void btnMas_Click(object sender, EventArgs e)
+{
+    // Si ya hay un operador al final del cuadro de texto, reemplázalo con el nuevo operador
+    if (textBox1.Text.Length > 0 && "+-*/".Contains(textBox1.Text.Substring(textBox1.Text.Length - 1)))
+    {
+        textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1) + "+";
+    }
+    else
+    {
+        textBox1.Text += "+";
+    }
+}
+
+private void btnMenos_Click(object sender, EventArgs e)
+{
+    if (textBox1.Text.Length > 0 && "+-*/".Contains(textBox1.Text.Substring(textBox1.Text.Length - 1)))
+    {
+        textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1) + "-";
+    }
+    else
+    {
+        textBox1.Text += "-";
+    }
+}
+
+private void btnMultiplicacion_Click(object sender, EventArgs e)
+{
+    if (textBox1.Text.Length > 0 && "+-*/".Contains(textBox1.Text.Substring(textBox1.Text.Length - 1)))
+    {
+        textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1) + "*";
+    }
+    else
+    {
+        textBox1.Text += "*";
+    }
+}
+
+private void btnDivision_Click(object sender, EventArgs e)
+{
+    if (textBox1.Text.Length > 0 && "+-*/".Contains(textBox1.Text.Substring(textBox1.Text.Length - 1)))
+    {
+        textBox1.Text = textBox1.Text.Substring(0, textBox1.Text.Length - 1) + "/";
+    }
+    else
+    {
+        textBox1.Text += "/";
+    }
+}
