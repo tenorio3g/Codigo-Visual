@@ -1,0 +1,127 @@
+import pygame
+import sys
+
+# Inicialización de Pygame
+pygame.init()
+
+# Dimensiones de la pantalla
+WIDTH, HEIGHT = 1400, 800
+# Colores
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+# Configuración de la pantalla
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Simulador de Aire Acondicionado")
+
+# Fuente para el texto
+font = pygame.font.Font(None, 36)
+
+# Cargar imagen del fondo y ajustar tamaño
+fondo_image = pygame.image.load("fondotrane.png")
+fondo_image = pygame.transform.scale(fondo_image, (WIDTH, HEIGHT))
+
+# Temperatura inicial y temperatura objetivo (setpoint)
+temperatura_actual = 25
+setpoint = 25
+# Velocidad de cambio de temperatura
+temp_change_speed = 0.01
+
+# Sonido del compresor
+compresor_sound = pygame.mixer.Sound("compresor.mp3")
+compresor_playing = False
+
+# Estado del sistema
+estado = "igualando"  # Puede ser "igualando" o "subiendo"
+
+# Cargar imagen del ventilador y ajustar tamaño
+ventilador_image = pygame.image.load("ventilador.png")
+ventilador_image = pygame.transform.scale(ventilador_image, (100, 100))
+# Mover el ventilador un poco a la derecha
+ventilador_rect = ventilador_image.get_rect(center=(WIDTH // 2 + 230, HEIGHT // 2 - 29))
+
+def draw_text(text, font, color, x, y):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    text_rect.topleft = (x, y)
+    screen.blit(text_surface, text_rect)
+
+def main():
+    global temperatura_actual, setpoint, temp_change_speed, compresor_playing, estado, ventilador_rect
+    
+    clock = pygame.time.Clock()
+    running = True
+    
+    # Angulo de rotacion inicial
+    angle = 0
+    # Velocidad de rotacion inicial
+    speed = 10
+    
+    # Angulo de rotacion anterior
+    prev_angle = 0
+    
+    while running:
+        screen.fill(WHITE)
+        
+        # Dibujar el fondo
+        screen.blit(fondo_image, (0, 0))
+        
+        # Manejo de eventos
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    running = False
+                elif event.key == pygame.K_UP:
+                    setpoint += 1
+                elif event.key == pygame.K_DOWN:
+                    setpoint -= 1
+        
+        # Dibujar el setpoint y la temperatura actual
+        draw_text(f"Setpoint: {setpoint}°C", font, WHITE, 50, 50)
+        draw_text(f"Temperatura Actual: {temperatura_actual:.1f}°C", font, WHITE, 50, 100)
+        
+        # Simular el funcionamiento del compresor
+        if estado == "igualando":
+            if temperatura_actual > setpoint + 1:
+                if not compresor_playing:
+                    compresor_sound.play()
+                    compresor_playing = True
+                temperatura_actual -= temp_change_speed  # Bajar gradualmente la temperatura actual
+            elif temperatura_actual < setpoint - 1:
+                if compresor_playing:
+                    compresor_sound.stop()
+                    compresor_playing = False
+                    prev_angle = angle  # Guardar la posición actual del ventilador
+                temperatura_actual += temp_change_speed  # Subir gradualmente la temperatura actual
+            else:
+                estado = "subiendo"
+        
+        elif estado == "subiendo":
+            if temperatura_actual < setpoint + 2:
+                if compresor_playing:
+                    compresor_sound.stop()
+                    compresor_playing = False
+                    prev_angle = angle  # Guardar la posición actual del ventilador
+                temperatura_actual += temp_change_speed  # Subir gradualmente la temperatura actual hasta +5 grados del setpoint
+            else:
+                estado = "igualando"
+        
+        # Control de rotación del ventilador
+        if compresor_playing:
+            angle -= speed  # Disminuir el ángulo para girar en sentido contrario
+            if angle < 0:
+                angle += 360  # Ajustar el ángulo si es menor que 0
+        ventilador_rotado = pygame.transform.rotate(ventilador_image, angle)
+        ventilador_rect = ventilador_rotado.get_rect(center=ventilador_rect.center)
+        screen.blit(ventilador_rotado, ventilador_rect)
+        
+        # Control de la pantalla
+        pygame.display.flip()
+        clock.tick(30)  # FPS
+    
+if __name__ == "__main__":
+    main()
