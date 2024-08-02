@@ -1,0 +1,37 @@
+const int sensorPin1 = A0;  // Pin analógico para el primer sensor
+const int sensorPin2 = A1;  // Pin analógico para el segundo sensor
+const int sensorPin3 = A2;  // Pin analógico para el tercer sensor
+const int sensorPin4 = A3;  // Pin analógico para el cuarto sensor
+const int sensorPin5 = A4;  // Pin analógico para el quinto sensor
+
+void setup() {
+  Serial.begin(9600);  // Inicializa la comunicación serial
+}
+
+void loop() {
+  // Lee los valores analógicos de los sensores
+  int valorSensor1 = analogRead(sensorPin1);
+  int valorSensor2 = analogRead(sensorPin2);
+  int valorSensor3 = analogRead(sensorPin3);
+  int valorSensor4 = analogRead(sensorPin4);
+  int valorSensor5 = analogRead(sensorPin5);
+
+  // Aplica la lógica para convertir los valores
+  valorSensor1 = (valorSensor1 >= 100) ? 0 : 1;
+  valorSensor2 = (valorSensor2 >= 200) ? 0 : 1;
+  valorSensor3 = (valorSensor3 >= 200) ? 0 : 1;
+  valorSensor4 = (valorSensor4 >= 200) ? 0 : 1;
+  valorSensor5 = (valorSensor5 >= 200) ? 0 : 1;
+
+  // Imprime los valores en el monitor serial
+    Serial.print(valorSensor1, DEC);
+    Serial.print(valorSensor2, DEC);
+    Serial.print(valorSensor3, DEC);
+    Serial.print(valorSensor4, DEC);
+    Serial.println(valorSensor5, DEC);
+
+
+  // Puedes realizar acciones adicionales con los datos aquí, como enviarlos por Bluetooth o realizar cálculos.
+
+  delay(2000);  // Espera un segundo antes de tomar otra lectura
+}
