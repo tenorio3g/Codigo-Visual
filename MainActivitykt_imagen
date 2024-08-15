@@ -1,0 +1,71 @@
+package com.fortunato.tenorioandroid
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
+import com.fortunato.tenorioandroid.ui.theme.TenorioAndroidTheme
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+
+
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            TenorioAndroidTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    Greeting(
+                        name = "Android",
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun Greeting(name: String, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
+        Image(
+            painter = painterResource(id = R.drawable.foto), // Reemplaza "your_image_name" con el nombre de tu imagen
+            contentDescription = "A description of the image",
+            modifier = Modifier
+                .fillMaxWidth() // Ajusta el tamaño de la imagen para que ocupe todo el ancho disponible
+                .height(400.dp) // Ajusta la altura de la imagen según tus necesidades
+                .padding(bottom = 16.dp) // Padding para separar la imagen del texto
+        )
+        Text(
+            text = "Hola a todos, mi nombre es fortunato tenorio garcia y este es mi primera aplicacion en android estudio y pues este es mi primer test $name!",
+            modifier = Modifier
+                .padding(horizontal = 16.dp) // Padding horizontal para el texto
+                .padding(top = 8.dp) // Padding superior para el texto
+                .fillMaxWidth() // Asegura que el texto ocupe todo el ancho disponible
+        )
+    }
+}
+
+
+
+
+@Preview(showBackground = true)
+@Composable
+fun GreetingPreview() {
+    TenorioAndroidTheme {
+        Greeting("Android")
+    }
+}
