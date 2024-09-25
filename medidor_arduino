@@ -1,0 +1,139 @@
+#include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
+
+#ifndef STASSID
+#define STASSID "INFINITUM0111_2.4"  // Cambia esto por el nombre de tu red WiFi
+#define STAPSK  "huT7zui8uVz"        // Cambia esto por la contraseña de tu red WiFi
+#endif
+
+const char* ssid = STASSID;
+const char* password = STAPSK;
+
+ESP8266WebServer server(80);
+const int led = 13;
+int waterFlow = 0;  // Variable global para almacenar el flujo de agua
+
+// Función para manejar la página principal con actualización automática usando AJAX y Chart.js
+void handleRoot() {
+  digitalWrite(led, 1);
+  String html = "<html><head>";
+  html += "<meta charset='UTF-8'>";
+  html += "<title>Flujo de Agua</title>";
+  
+  // Incluir la librería Chart.js
+  html += "<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>";
+  
+  // Script para actualizar los datos de la gráfica y mostrar en tiempo real
+  html += "<script>";
+  html += "let flowData = [];";
+  html += "let labels = [];";
+  html += "let chart;";
+  
+  // Función para actualizar la gráfica
+  html += "function updateChart(newFlow) {";
+  html += "  if (flowData.length > 10) { flowData.shift(); labels.shift(); }";  // Limitar a los últimos 10 datos
+  html += "  flowData.push(newFlow);";
+  html += "  labels.push(new Date().toLocaleTimeString());";
+  html += "  chart.update();";
+  html += "}";
+  
+  // Configurar la gráfica inicial
+  html += "window.onload = function() {";
+  html += "  const ctx = document.getElementById('flowChart').getContext('2d');";
+  html += "  chart = new Chart(ctx, {";
+  html += "    type: 'line',";
+  html += "    data: {";
+  html += "      labels: labels,";
+  html += "      datasets: [{";
+  html += "        label: 'Flujo de Agua (L/min)',";
+  html += "        data: flowData,";
+  html += "        borderColor: 'rgba(75, 192, 192, 1)',";
+  html += "        borderWidth: 1";
+  html += "      }]",
+  html += "    },";
+  html += "    options: { scales: { y: { beginAtZero: true } } }";
+  html += "  });";
+  html += "};";
+  
+  // Función para obtener los datos de flujo cada 5 segundos
+  html += "setInterval(function() {";
+  html += "  fetch('/data').then(response => response.text()).then(data => {";
+  html += "    const flowValue = parseInt(data.match(/\\d+/)[0]);";  // Obtener solo el número del flujo
+  html += "    document.getElementById('flow').innerHTML = data;";
+  html += "    updateChart(flowValue);";  // Actualizar la gráfica con el nuevo dato
+  html += "  });";
+  html += "}, 5000);";  // Intervalo de 5 segundos para actualizar datos
+  html += "</script>";
+  
+  html += "</head><body>";
+  html += "<h1>Datos de Flujo</h1>";
+  html += "<div id='flow'>Cargando datos...</div>";  // Aquí aparecerán los datos
+  
+  // Contenedor para la gráfica
+  html += "<canvas id='flowChart' width='400' height='200'></canvas>";
+  
+  html += "</body></html>";
+  
+  server.send(200, "text/html", html);
+  digitalWrite(led, 0);
+}
+
+// Función para manejar la ruta que envía los datos de flujo de agua
+void handleData() {
+  waterFlow = random(10, 20);  // Simular un valor aleatorio de flujo de agua
+  String response = String("Flujo de agua: ") + String(waterFlow) + " L/min";
+  server.send(200, "text/plain", response);
+}
+
+// Función para manejar rutas no encontradas (404)
+void handleNotFound() {
+  digitalWrite(led, 1);
+  String message = "File Not Found\n\n";
+  message += "URI: " + server.uri();
+  message += "\nMethod: " + String(server.method() == HTTP_GET ? "GET" : "POST");
+  message += "\nArguments: " + String(server.args());
+  server.send(404, "text/plain", message);
+  digitalWrite(led, 0);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, 0);
+  Serial.begin(9600);
+
+  // Conectarse a la red WiFi
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  
+  Serial.println("");
+  Serial.print("Conectado a ");
+  Serial.println(ssid);
+  Serial.print("Dirección IP: ");
+  Serial.println(WiFi.localIP());
+
+  // Configuración de MDNS para acceder usando "http://esp8266.local"
+  if (MDNS.begin("esp8266")) {
+    Serial.println("MDNS responder iniciado");
+  }
+
+  // Rutas del servidor
+  server.on("/", handleRoot);     // Página principal
+  server.on("/data", handleData); // Ruta para los datos de flujo
+  server.onNotFound(handleNotFound);  // Página 404
+  
+  // Iniciar servidor
+  server.begin();
+  Serial.println("Servidor HTTP iniciado");
+}
+
+void loop(void) {
+  server.handleClient();  // Manejar solicitudes de clientes
+  MDNS.update();          // Actualizar MDNS
+}
