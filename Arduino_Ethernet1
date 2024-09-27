@@ -1,0 +1,111 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la red
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };  // Dirección MAC del Ethernet Shield
+IPAddress ip(192, 168, 1, 100);  // IP asignada
+EthernetServer server(80);
+const int led = 13;
+int waterFlow = 0;  // Variable global para almacenar el flujo de agua
+
+// Función para manejar la página principal con actualización automática usando AJAX y Chart.js
+void handleRoot(EthernetClient client) {
+  digitalWrite(led, HIGH);
+  
+  // Enviar cabecera HTTP
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  // Enviar contenido HTML
+  client.println("<html><head><meta charset='UTF-8'><title>Flujo de Agua</title>");
+  client.println("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
+  client.println("<script>let flowData = []; let labels = []; let chart;");
+  client.println("function updateChart(newFlow) { if (flowData.length > 10) { flowData.shift(); labels.shift(); }");
+  client.println("flowData.push(newFlow); labels.push(new Date().toLocaleTimeString()); chart.update(); }");
+  client.println("window.onload = function() { const ctx = document.getElementById('flowChart').getContext('2d');");
+  client.println("chart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Flujo de Agua (L/min)',");
+  client.println("data: flowData, borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1 }] }, options: { scales: { y: { beginAtZero: true } } } });};");
+  client.println("setInterval(function() { fetch('/data').then(response => response.text()).then(data => {");
+  client.println("const flowValue = parseInt(data.match(/\\d+/)[0]); document.getElementById('flow').innerHTML = data;");
+  client.println("updateChart(flowValue); });}, 5000);</script></head><body>");
+  client.println("<h1>Datos de Flujo</h1><div id='flow'>Cargando datos...</div>");
+  client.println("<canvas id='flowChart' width='400' height='200'></canvas></body></html>");
+
+  digitalWrite(led, LOW);
+}
+
+// Función para manejar la ruta que envía los datos de flujo de agua
+void handleData(EthernetClient client) {
+  waterFlow = random(6, 12);  // Generar un flujo de agua aleatorio
+
+  // Preparar la respuesta
+  char response[40];
+  snprintf(response, sizeof(response), "Flujo de agua: %d L/min", waterFlow);
+
+  // Enviar cabecera HTTP y la respuesta
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/plain");
+  client.println("Connection: close");
+  client.println();
+  client.println(response);
+}
+
+// Función para manejar rutas no encontradas (404)
+void handleNotFound(EthernetClient client) {
+  digitalWrite(led, HIGH);
+  
+  // Enviar cabecera HTTP
+  client.println("HTTP/1.1 404 Not Found");
+  client.println("Content-Type: text/plain");
+  client.println("Connection: close");
+  client.println();
+  
+  // Mensaje de error
+  client.println("File Not Found");
+  digitalWrite(led, LOW);
+}
+
+void setup(void) {
+  pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
+  Serial.begin(9600);
+
+  // Conectarse a la red Ethernet
+  Ethernet.begin(mac, ip);
+  Serial.print("Dirección IP: ");
+  Serial.println(Ethernet.localIP());
+
+  // Iniciar el servidor
+  server.begin();
+  Serial.println("Servidor HTTP iniciado");
+}
+
+void loop(void) {
+  EthernetClient client = server.available();
+  
+  if (client) {
+    // Leer la solicitud HTTP
+    char request[100] = {0};
+    int index = 0;
+    while (client.available()) {
+      char c = client.read();
+      if (c == '\r' || c == '\n') break;
+      request[index++] = c;
+    }
+    
+    // Manejar la solicitud del cliente
+    if (strncmp(request, "GET / ", 6) == 0) {
+      handleRoot(client);  // Página principal
+    } else if (strncmp(request, "GET /data", 9) == 0) {
+      handleData(client);  // Datos de flujo de agua
+    } else {
+      handleNotFound(client);  // Ruta no encontrada
+    }
+
+    // Cerrar la conexión
+    delay(1);
+    client.stop();
+  }
+}
