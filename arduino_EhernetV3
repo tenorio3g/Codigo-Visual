@@ -1,0 +1,138 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC e IP
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+IPAddress ip(192, 168, 1, 177);  // Cambia esta IP según tu red local
+EthernetServer server(80);
+
+void setup() {
+  // Iniciar la conexión Ethernet y el servidor
+  Ethernet.begin(mac, ip);
+  server.begin();
+  Serial.begin(9600);  // Para monitorear en el puerto serie
+  Serial.println("Servidor iniciado");
+  Serial.print("Conectado a IP: ");
+  Serial.println(Ethernet.localIP());
+}
+
+void loop() {
+  // Esperar a que un cliente se conecte
+  EthernetClient client = server.available();
+  if (client) {
+    boolean currentLineIsBlank = true;
+    String request = "";
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        request += c;
+        if (c == '\n' && currentLineIsBlank) {
+          // Verifica si la solicitud es para datos AJAX
+          if (request.indexOf("GET /data") >= 0) {
+            sendData(client);
+          } else {
+            // Enviar la página HTML si no es una solicitud de datos
+            sendHTML(client);
+          }
+          break;
+        }
+        if (c == '\n') {
+          currentLineIsBlank = true;
+        } else if (c != '\r') {
+          currentLineIsBlank = false;
+        }
+      }
+    }
+    delay(1);
+    client.stop();
+    Serial.println("Cliente desconectado");
+  }
+}
+
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+  client.println("<!DOCTYPE HTML>");
+  client.println("<html>");
+  
+  // Página básica con el gráfico
+  client.println("<h1>Mediciones en tiempo real</h1>");
+  client.println("<canvas id='myChart' width='400' height='400'></canvas>");
+  
+  // Script de Chart.js para el gráfico
+  client.println("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
+  client.println("<script>");
+  client.println("var ctx = document.getElementById('myChart').getContext('2d');");
+  client.println("var chart = new Chart(ctx, {");
+  client.println("type: 'line',");
+  client.println("data: {");
+  client.println("labels: [],");  // Etiquetas vacías, se llenarán con los tiempos
+  client.println("datasets: [{");
+  client.println("label: 'A0 (Voltaje)',");
+  client.println("data: [],");  // Datos iniciales vacíos para A0
+  client.println("borderColor: 'rgba(75, 192, 192, 1)',");
+  client.println("borderWidth: 2");
+  client.println("}, {");
+  client.println("label: 'A1 (Voltaje)',");
+  client.println("data: [],");  // Datos iniciales vacíos para A1
+  client.println("borderColor: 'rgba(255, 99, 132, 1)',");
+  client.println("borderWidth: 2");
+  client.println("}]");
+  client.println("},");
+  client.println("options: {");
+  client.println("scales: {");
+  client.println("y: {");
+  client.println("beginAtZero: true");
+  client.println("}");
+  client.println("}");
+  client.println("}");
+  client.println("});");
+  
+  // Solicitud AJAX para obtener los datos cada 2 segundos
+  client.println("setInterval(function() {");
+  client.println("var xhttp = new XMLHttpRequest();");
+  client.println("xhttp.onreadystatechange = function() {");
+  client.println("if (this.readyState == 4 && this.status == 200) {");
+  client.println("var response = JSON.parse(this.responseText);");
+  client.println("updateChart(response);");
+  client.println("}");
+  client.println("};");
+  client.println("xhttp.open('GET', '/data', true);");
+  client.println("xhttp.send();");
+  client.println("}, 2000);");  // Actualiza cada 2 segundos
+  
+  client.println("</script>");
+  client.println("</html>");
+}
+
+// Función para enviar los datos de los sensores
+void sendData(EthernetClient client) {
+  // Leer los valores de los sensores en A0 y A1
+  int sensor1 = analogRead(A0);
+  int sensor2 = analogRead(A1);
+  
+  // Convertir los valores a voltaje (0-5V, 10 bits)
+  float voltage1 = sensor1 * (5.0 / 1023.0);
+  float voltage2 = sensor2 * (5.0 / 1023.0);
+  
+  // Imprimir los valores leídos en el monitor serie para depuración
+  Serial.print("Lectura de A0: ");
+  Serial.print(voltage1, 2);
+  Serial.print(" V, Lectura de A1: ");
+  Serial.print(voltage2, 2);
+  Serial.println(" V");
+  
+  // Enviar los datos en formato JSON
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+  client.print("[");
+  client.print(voltage1, 2);  // Enviar el voltaje del sensor A0
+  client.print(", ");
+  client.print(voltage2, 2);  // Enviar el voltaje del sensor A1
+  client.println("]");
+}
