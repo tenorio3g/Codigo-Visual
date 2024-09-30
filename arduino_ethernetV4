@@ -1,0 +1,49 @@
+const int numReadings = 10;
+int readingsA0[numReadings];
+int readingsA1[numReadings];
+int index = 0;
+int totalA0 = 0;
+int totalA1 = 0;
+int averageA0 = 0;
+int averageA1 = 0;
+
+void setup() {
+  Serial.begin(9600);
+  for (int i = 0; i < numReadings; i++) {
+    readingsA0[i] = 0;
+    readingsA1[i] = 0;
+  }
+}
+
+void loop() {
+  // Eliminar la lectura más antigua
+  totalA0 = totalA0 - readingsA0[index];
+  totalA1 = totalA1 - readingsA1[index];
+
+  // Leer el nuevo valor
+  readingsA0[index] = analogRead(A0);
+  readingsA1[index] = analogRead(A1);
+
+  // Agregar el nuevo valor al total
+  totalA0 = totalA0 + readingsA0[index];
+  totalA1 = totalA1 + readingsA1[index];
+
+  // Avanzar al siguiente índice
+  index = index + 1;
+
+  if (index >= numReadings) {
+    index = 0;
+  }
+
+  // Calcular el promedio
+  averageA0 = totalA0 / numReadings;
+  averageA1 = totalA1 / numReadings;
+
+  // Imprimir los promedios
+  Serial.print("A0 Promedio: ");
+  Serial.println(averageA0);
+  Serial.print("A1 Promedio: ");
+  Serial.println(averageA1);
+
+  delay(100);  // Esperar un poco antes de la siguiente lectura
+}
