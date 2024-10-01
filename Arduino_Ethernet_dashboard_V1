@@ -1,0 +1,104 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC e IP
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Cambia esto por tu dirección MAC
+IPAddress ip(192, 168, 1, 177); // Cambia esto a la IP deseada en tu red local
+
+EthernetServer server(80);  // Servidor en el puerto 80
+
+const int analogPin1 = A0;  // Primer pin analógico
+const int analogPin2 = A1;  // Segundo pin analógico
+int value1 = 0;  // Valor leído del primer pin
+int value2 = 0;  // Valor leído del segundo pin
+
+void setup() {
+  Serial.begin(9600);
+  Ethernet.begin(mac, ip);  // Inicializar Ethernet
+  server.begin();  // Iniciar el servidor
+}
+
+void loop() {
+  EthernetClient client = server.available();  // Esperar a que un cliente se conecte
+  if (client) {
+    String request = client.readStringUntil('\r');  // Leer la solicitud del cliente
+    client.flush();
+
+    if (request.indexOf("GET / ") >= 0) {
+      // Enviar la página HTML al cliente
+      sendHTML(client);
+    } else if (request.indexOf("GET /data") >= 0) {
+      // Enviar los datos JSON al cliente
+      sendData(client);
+    }
+    client.stop();  // Cerrar la conexión con el cliente
+  }
+
+  // Leer los valores de los pines analógicos
+  value1 = analogRead(analogPin1);
+  value2 = analogRead(analogPin2);
+}
+
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  // HTML y CSS para crear el dashboard
+  client.println(F("<html><head><title>Dashboard de Sensores</title>"));
+  client.println(F("<style>"));
+  client.println(F("body { background-color: lightgray; font-family: Arial, sans-serif; }"));
+  client.println(F(".dashboard { display: flex; justify-content: space-around; flex-wrap: wrap; }"));
+  client.println(F(".panel { background-color: white; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2); padding: 20px; margin: 10px; }"));
+  client.println(F(".panel img { max-width: 100%; border-radius: 10px; }"));
+  client.println(F("</style>"));
+  client.println(F("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script></head><body>"));
+  client.println(F("<h1 style='text-align:center;'>Dashboard de Sensores</h1>"));
+
+  // Panel para la imagen
+  client.println(F("<div class='dashboard'>"));
+  client.println(F("<div class='panel' style='width:45%;'><h2>Imagen</h2>"));
+  client.println(F("<img src='https://lainholding.com/wp-content/uploads/2021/10/solucion-base-calidad-de-agua-compress-600x321.jpg' alt='Portada'></div>"));
+
+  // Panel para el gráfico
+  client.println(F("<div class='panel' style='width:45%;'><h2>Grafico de Sensores</h2>"));
+  client.println(F("<canvas id='myChart' width='400' height='200'></canvas></div>"));
+  client.println(F("</div>"));
+
+  // Script para el gráfico
+  client.println(F("<script>"));
+  client.println(F("var ctx = document.getElementById('myChart').getContext('2d');"));
+  client.println(F("var myChart = new Chart(ctx, {"));
+  client.println(F("type: 'line',"));
+  client.println(F("data: { labels: [], datasets: ["));
+  client.println(F("{ label: 'Sensor 1', data: [], borderColor: 'rgba(255, 99, 132, 1)', fill: false },"));
+  client.println(F("{ label: 'Sensor 2', data: [], borderColor: 'rgba(54, 162, 235, 1)', fill: false }"));
+  client.println(F("] }, options: { scales: { y: { beginAtZero: true } } } });"));
+
+  client.println(F("function updateData() {"));
+  client.println(F("fetch('/data').then(response => response.json()).then(data => {"));
+  client.println(F("var time = new Date().toLocaleTimeString();"));
+  client.println(F("myChart.data.labels.push(time);"));
+  client.println(F("myChart.data.datasets[0].data.push(data.value1);"));
+  client.println(F("myChart.data.datasets[1].data.push(data.value2);"));
+  client.println(F("myChart.update();"));  
+  client.println(F("}); }"));
+
+  client.println(F("setInterval(updateData, 2000);"));  // Actualizar cada 2 segundos
+  client.println(F("</script>"));
+  client.println(F("</body></html>"));
+}
+
+// Función para enviar los datos JSON
+void sendData(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+  
+  // Enviar los valores de los pines analógicos en formato JSON
+  String json = "{\"value1\": " + String(value1) + ", \"value2\": " + String(value2) + "}";
+  client.println(json);
+}
