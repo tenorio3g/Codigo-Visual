@@ -1,0 +1,171 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC e IP
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Cambia esto por tu dirección MAC
+IPAddress ip(192, 168, 1, 177); // Cambia esto a la IP deseada en tu red local
+
+EthernetServer server(80);  // Servidor en el puerto 80
+
+const int analogPin1 = A0;  // Primer pin analógico
+const int analogPin2 = A1;  // Segundo pin analógico
+int value1 = 0;  // Valor leído del primer pin
+int value2 = 0;  // Valor leído del segundo pin
+
+void setup() {
+  Serial.begin(9600);
+  Ethernet.begin(mac, ip);  // Inicializar Ethernet
+  server.begin();  // Iniciar el servidor
+}
+
+void loop() {
+  EthernetClient client = server.available();  // Esperar a que un cliente se conecte
+  if (client) {
+    String request = client.readStringUntil('\r');  // Leer la solicitud del cliente
+    client.flush();
+
+    if (request.indexOf("GET / ") >= 0) {
+      // Enviar la página HTML al cliente
+      sendHTML(client);
+    } else if (request.indexOf("GET /data") >= 0) {
+      // Enviar los datos JSON al cliente
+      sendData(client);
+    }
+    client.stop();  // Cerrar la conexión con el cliente
+  }
+
+  // Leer los valores de los pines analógicos
+  value1 = analogRead(analogPin1);
+  value2 = analogRead(analogPin2);
+}
+
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  client.println(F("<html><head><title>Dashboard de Medidores</title>"));
+
+  // Estilos
+  client.println(F("<style>"));
+  client.println(F("body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }"));
+  client.println(F(".dashboard { display: none; justify-content: space-around; align-items: center; padding: 20px; }")); // Ocultar inicialmente
+  client.println(F(".panel { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 45%; }"));
+  client.println(F(".panel img { max-width: 100%; height: auto; border-radius: 8px; }"));
+  client.println(F(".values { display: flex; justify-content: space-between; padding: 10px; }"));
+  client.println(F(".values div { margin-right: 10px; }"));
+  client.println(F(".alarm { display: flex; align-items: center; margin-left: 20px; }"));
+  client.println(F(".alarm-indicator { width: 20px; height: 20px; background-color: red; border-radius: 50%; animation: blink 1s infinite; }"));
+  client.println(F("@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }"));
+  client.println(F("#chartContainer { width: 100%; height: 300px; }"));
+  client.println(F(".video-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 9999; background-color: black; display: flex; justify-content: center; align-items: center; }"));
+  client.println(F(".video-overlay iframe { width: 100vw; height: 100vh; }"));
+
+  client.println(F("</style>"));
+
+  // Script para ocultar el video después de unos segundos o al hacer clic
+  client.println(F("<script>"));
+  client.println(F("function hideVideoOverlay() {"));
+  client.println(F("document.querySelector('.video-overlay').style.display = 'none';"));
+  client.println(F("document.querySelector('.dashboard').style.display = 'flex';"));
+  client.println(F("}"));
+  
+  // Omitir el video tras unos segundos (ejemplo: 5 segundos)
+  client.println(F("setTimeout(hideVideoOverlay, 15000);"));
+  client.println(F("</script>"));
+
+  client.println(F("</head><body>"));
+
+  // Video de introducción usando iframe de YouTube
+  client.println(F("<div class='video-overlay'>"));
+  client.println(F("<iframe width='100%' height='100%' src='https://www.youtube.com/embed/egFDiwwupXg?autoplay=1&mute=1' frameborder='0' allow='autoplay; encrypted-media' allowfullscreen></iframe>"));
+  client.println(F("</div>"));
+
+  // Dashboard layout (oculto al principio)
+  client.println(F("<div class='dashboard'>"));
+
+  // Panel de la portada
+  client.println(F("<div class='panel'><h2>Portada</h2>"));
+  client.println(F("<img src='https://lainholding.com/wp-content/uploads/2021/10/solucion-base-calidad-de-agua-compress-600x321.jpg' alt='Portada'></div>"));
+
+  // Panel de datos con gráfico
+  client.println(F("<div class='panel'><h2>Flujo en Tiempo Real y Promedios</h2>"));
+
+  // Valores de flujo y promedio
+  client.println(F("<div class='values'>"));
+  client.println(F("<div><strong>Flujo Medidor 1:</strong> <span id='value1'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 1:</strong> <span id='avg1'>0</span> L/min</div>"));
+  client.println(F("</div>"));
+
+  client.println(F("<div class='values'>"));
+  client.println(F("<div><strong>Flujo Medidor 2:</strong> <span id='value2'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 2:</strong> <span id='avg2'>0</span> L/min</div>"));
+  client.println(F("</div>"));
+
+  // Contenedor para el gráfico
+  client.println(F("<h3>Gráfico de Flujo</h3>"));
+  client.println(F("<div id='chartContainer'>"));
+  client.println(F("<canvas id='myChart'></canvas>"));
+  client.println(F("</div>"));
+
+  // Alarma visual
+  client.println(F("<div class='alarm'><strong>Alarmas:</strong><div class='alarm-indicator' id='alarm'></div></div>"));
+  client.println(F("</div>")); // Cierra el panel de datos
+
+  client.println(F("</div>"));  // Cierra el dashboard
+
+  // Script para actualizar datos y generar gráfico
+  client.println(F("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>"));
+  client.println(F("<script>"));
+  client.println(F("var ctx = document.getElementById('myChart').getContext('2d');"));
+  client.println(F("var chart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Flujo Medidor 1', borderColor: 'blue', data: [] }, { label: 'Flujo Medidor 2', borderColor: 'red', data: [] }] }, options: { scales: { x: { beginAtZero: true }, y: { beginAtZero: true } } } });"));
+
+  client.println(F("function updateData() {"));
+  client.println(F("fetch('/data').then(response => response.json()).then(data => {"));
+  client.println(F("document.getElementById('value1').innerText = data.value1;"));
+  client.println(F("document.getElementById('value2').innerText = data.value2;"));
+  client.println(F("document.getElementById('avg1').innerText = data.avg1;"));
+  client.println(F("document.getElementById('avg2').innerText = data.avg2;"));
+
+  // Añadir nuevo punto de datos al gráfico
+  client.println(F("chart.data.labels.push('');"));
+  client.println(F("chart.data.datasets[0].data.push(data.value1);"));
+  client.println(F("chart.data.datasets[1].data.push(data.value2);"));
+
+  // Mantener solo los últimos 20 puntos en el gráfico
+  client.println(F("if (chart.data.labels.length > 20) {"));
+  client.println(F("chart.data.labels.shift();"));
+  client.println(F("chart.data.datasets[0].data.shift();"));
+  client.println(F("chart.data.datasets[1].data.shift();"));
+  client.println(F("}"));
+
+  client.println(F("chart.update();"));
+
+  // Lógica de alarma
+  client.println(F("if (data.value1 < 10 || data.value2 < 10) {"));
+  client.println(F("document.getElementById('alarm').style.backgroundColor = 'red';"));
+  client.println(F("} else {"));
+  client.println(F("document.getElementById('alarm').style.backgroundColor = 'green';"));
+  client.println(F("}});"));
+  client.println(F("}"));
+  client.println(F("setInterval(updateData, 2000);"));
+  client.println(F("</script>"));
+
+  client.println(F("</body></html>"));
+}
+
+
+
+// Función para enviar los datos JSON
+void sendData(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+  
+  // Enviar los valores de los pines analógicos en formato JSON
+  String json = "{\"value1\": " + String(value1) + ", \"value2\": " + String(value2) + "}";
+  client.println(json);
+}
