@@ -1,0 +1,176 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC e IP
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Cambia esto por tu dirección MAC
+IPAddress ip(192, 168, 1, 177); // Cambia esto a la IP deseada en tu red local
+
+EthernetServer server(80);  // Servidor en el puerto 80
+
+const int analogPin1 = A0;  // Primer pin analógico
+const int analogPin2 = A1;  // Segundo pin analógico
+int value1 = 0;  // Valor leído del primer pin
+int value2 = 0;  // Valor leído del segundo pin
+
+void setup() {
+  Serial.begin(9600);
+  Ethernet.begin(mac, ip);  // Inicializar Ethernet
+  server.begin();  // Iniciar el servidor
+}
+
+void loop() {
+  EthernetClient client = server.available();  // Esperar a que un cliente se conecte
+  if (client) {
+    String request = client.readStringUntil('\r');  // Leer la solicitud del cliente
+    client.flush();
+
+    if (request.indexOf("GET / ") >= 0) {
+      // Enviar la página HTML al cliente
+      sendHTML(client);
+    } else if (request.indexOf("GET /data") >= 0) {
+      // Enviar los datos JSON al cliente
+      sendData(client);
+    }
+    client.stop();  // Cerrar la conexión con el cliente
+  }
+
+  // Leer los valores de los pines analógicos
+  value1 = analogRead(analogPin1);
+  value2 = analogRead(analogPin2);
+}
+
+// Función para enviar la página HTML
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  client.println(F("<html><head><title>Dashboard de Medidores</title>"));
+
+  // Estilos
+client.println(F("<style>"));
+client.println(F("body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }"));
+client.println(F(".dashboard { display: none; justify-content: space-around; align-items: center; padding: 20px; }")); // Oculto al principio
+client.println(F(".panel { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 45%; }"));
+client.println(F(".login-form { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEim23THhy9VBZw9rXHAPo3KqgKCvLg35cYGbULijq-JD8uE1FKsgjK2xp_IIuf8xD9u0NsyAyJT_uG2N-1p1MDg-0WlQY9mHGn-bfjvSoH4s21jniaR76BcQVR1VQBseW7-HX1MnK4IpzQB0x7HbXQ6X9M0TJ8vKEKjFVOpxe6ECizxNsNE1gNAas501iA/s1280/Diapositiva1.JPG'); background-size: cover; background-position: center; }")); // Imagen de fondo
+client.println(F(".login-form input { padding: 10px; margin: 5px; width: 200px; }"));
+client.println(F(".login-form button { padding: 10px; margin-top: 10px; width: 220px; }"));
+client.println(F(".error { color: red; display: none; }")); // Para mostrar errores de login
+client.println(F("</style>"));
+
+  // Script para manejar el login
+  client.println(F("<script>"));
+  client.println(F("function login() {"));
+  client.println(F("var user = document.getElementById('username').value;"));
+  client.println(F("var pass = document.getElementById('password').value;"));
+  
+  // Verificar en el cliente si el usuario y contraseña son correctos
+  client.println(F("if (user === 'Tenorio' && pass === 'Alcom123') {"));
+  client.println(F("document.querySelector('.login-form').style.display = 'none';"));
+  client.println(F("document.querySelector('.dashboard').style.display = 'flex';"));
+  client.println(F("} else {"));
+  client.println(F("document.getElementById('error-message').style.display = 'block';"));
+  client.println(F("}"));
+  client.println(F("}"));
+  client.println(F("</script>"));
+
+  client.println(F("</head><body>"));
+
+  // Formulario de inicio de sesión
+  client.println(F("<div class='login-form'>"));
+  client.println(F("<h2>Iniciar Sesion</h2>"));
+  client.println(F("<input type='text' id='username' placeholder='Usuario' />"));
+  client.println(F("<input type='password' id='password' placeholder='Password' />"));
+  client.println(F("<button onclick='login()'>Iniciar Sesion</button>"));
+  client.println(F("<p id='error-message' class='error'>Usuario o contraseña incorrectos</p>"));
+  client.println(F("</div>"));
+
+  // Dashboard (oculto al principio)
+  client.println(F("<div class='dashboard'>"));
+
+  // Panel de la portada
+  client.println(F("<div class='panel'><h2>Portada</h2>"));
+  client.println(F("<img src='https://lainholding.com/wp-content/uploads/2021/10/solucion-base-calidad-de-agua-compress-600x321.jpg' alt='Portada'></div>"));
+
+  // Panel de datos con gráfico
+  client.println(F("<div class='panel'><h2>Flujo en Tiempo Real y Promedios</h2>"));
+
+  // Valores de flujo y promedio
+  client.println(F("<div class='values'>"));
+  client.println(F("<div><strong>Flujo Medidor 1:</strong> <span id='value1'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 1:</strong> <span id='avg1'>0</span> L/min</div>"));
+  client.println(F("</div>"));
+
+  client.println(F("<div class='values'>"));
+  client.println(F("<div><strong>Flujo Medidor 2:</strong> <span id='value2'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 2:</strong> <span id='avg2'>0</span> L/min</div>"));
+  client.println(F("</div>"));
+
+  // Contenedor para el gráfico
+  client.println(F("<h3>Grafico de Flujo</h3>"));
+  client.println(F("<div id='chartContainer'>"));
+  client.println(F("<canvas id='myChart'></canvas>"));
+  client.println(F("</div>"));
+
+  // Alarma visual
+  client.println(F("<div class='alarm'><strong>Alarmas:</strong><div class='alarm-indicator' id='alarm'></div></div>"));
+  client.println(F("</div>")); // Cierra el panel de datos
+
+  client.println(F("</div>"));  // Cierra el dashboard
+
+  // Script para actualizar datos y generar gráfico
+  client.println(F("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>"));
+  client.println(F("<script>"));
+  client.println(F("var ctx = document.getElementById('myChart').getContext('2d');"));
+  client.println(F("var chart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Flujo Medidor 1', borderColor: 'blue', data: [] }, { label: 'Flujo Medidor 2', borderColor: 'red', data: [] }] }, options: { scales: { x: { beginAtZero: true }, y: { beginAtZero: true } } } });"));
+
+  client.println(F("function updateData() {"));
+  client.println(F("fetch('/data').then(response => response.json()).then(data => {"));
+  client.println(F("document.getElementById('value1').innerText = data.value1;"));
+  client.println(F("document.getElementById('value2').innerText = data.value2;"));
+  client.println(F("document.getElementById('avg1').innerText = data.avg1;"));
+  client.println(F("document.getElementById('avg2').innerText = data.avg2;"));
+
+  // Añadir nuevo punto de datos al gráfico
+  client.println(F("chart.data.labels.push('');"));
+  client.println(F("chart.data.datasets[0].data.push(data.value1);"));
+  client.println(F("chart.data.datasets[1].data.push(data.value2);"));
+
+  // Mantener solo los últimos 20 puntos en el gráfico
+  client.println(F("if (chart.data.labels.length > 20) {"));
+  client.println(F("chart.data.labels.shift();"));
+  client.println(F("chart.data.datasets[0].data.shift();"));
+  client.println(F("chart.data.datasets[1].data.shift();"));
+  client.println(F("}"));
+
+  client.println(F("chart.update();"));
+
+  // Lógica de alarma
+  client.println(F("if (data.value1 < 10 || data.value2 < 10) {"));
+  client.println(F("document.getElementById('alarm').style.backgroundColor = 'red';"));
+  client.println(F("} else {"));
+  client.println(F("document.getElementById('alarm').style.backgroundColor = 'green';"));
+  client.println(F("}});"));
+  client.println(F("}"));
+  client.println(F("setInterval(updateData, 2000);"));
+  client.println(F("</script>"));
+
+  client.println(F("</body></html>"));
+}
+
+
+
+
+// Función para enviar los datos JSON
+void sendData(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+  
+  // Enviar los valores de los pines analógicos en formato JSON
+  String json = "{\"value1\": " + String(value1) + ", \"value2\": " + String(value2) + "}";
+  client.println(json);
+}
