@@ -1,0 +1,87 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC e IP
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Cambia esto por tu dirección MAC
+IPAddress ip(192, 168, 1, 177); // Cambia esto a la IP deseada en tu red local
+
+EthernetServer server(80);  // Servidor en el puerto 80
+
+const int relayPin = 8;  // Pin del relé
+bool relayState = false;  // Estado del relé (apagado por defecto)
+
+void setup() {
+  Serial.begin(9600);  // Iniciar comunicación serie para depuración
+  Ethernet.begin(mac, ip);  // Inicializar Ethernet
+  server.begin();  // Iniciar el servidor
+  pinMode(relayPin, OUTPUT);  // Configurar el pin del relé como salida
+  digitalWrite(relayPin, LOW);  // Iniciar con el relé apagado
+  Serial.println("Servidor iniciado en la IP: ");
+  Serial.println(Ethernet.localIP());  // Mostrar la IP asignada
+}
+
+void loop() {
+  EthernetClient client = server.available();  // Esperar a que un cliente se conecte
+  if (client) {
+    String request = client.readStringUntil('\r');  // Leer la solicitud del cliente
+    client.flush();
+
+    // Verificar si se está solicitando el control del relé
+    if (request.indexOf("GET /toggle") >= 0) {
+      relayState = !relayState;  // Cambiar el estado del relé
+      digitalWrite(relayPin, relayState ? HIGH : LOW);  // Controlar el relé
+      Serial.print("Relé estado: ");  // Ver el estado del relé en la consola
+      Serial.println(relayState ? "ENCENDIDO" : "APAGADO");
+      sendState(client);  // Enviar el estado del relé como respuesta
+    } else {
+      // Enviar la página HTML al cliente
+      sendHTML(client);
+    }
+    client.stop();  // Cerrar la conexión con el cliente
+  }
+}
+
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  client.println(F("<html><head><title>Control de Relé</title>"));
+
+  // Estilos y script
+  client.println(F("<style>"));
+  client.println(F("body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; text-align: center; padding-top: 50px; }"));
+  client.println(F("button { padding: 10px 20px; font-size: 16px; }"));
+  client.println(F("</style>"));
+
+  // JavaScript para manejar el botón de encendido/apagado sin recargar la página
+  client.println(F("<script>"));
+  client.println(F("function toggleRelay() {"));
+  client.println(F("fetch('/toggle').then(response => response.json()).then(data => {"));
+  client.println(F("document.getElementById('relayButton').innerText = data.relayState ? 'Apagar' : 'Prender';"));
+  client.println(F("});"));
+  client.println(F("}"));
+  client.println(F("</script>"));
+
+  client.println(F("</head><body>"));
+
+  // Título y botón para controlar el relé
+  client.println(F("<h1>Control de Relé</h1>"));
+  client.println(F("<button id='relayButton' onclick='toggleRelay()'>Prender</button>"));  // Botón de control
+
+  client.println(F("</body></html>"));
+}
+
+// Función para enviar el estado del relé en formato JSON
+void sendState(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+
+  // Enviar el estado del relé en formato JSON
+  String json = "{\"relayState\": " + String(relayState ? "true" : "false") + "}";
+  client.println(json);
+}
