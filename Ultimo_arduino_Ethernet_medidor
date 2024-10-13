@@ -1,0 +1,172 @@
+#include <SPI.h>
+#include <Ethernet.h>
+
+// Configuración de la dirección MAC
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // Dirección MAC de tu módulo Ethernet
+
+EthernetServer server(80);  // Servidor en el puerto 80
+
+const int analogPin1 = A0;  // Primer pin analógico
+const int analogPin2 = A1;  // Segundo pin analógico
+int value1 = 0;  // Valor leído del primer pin
+int value2 = 0;  // Valor leído del segundo pin
+
+void setup() {
+  Serial.begin(9600);
+
+  // Iniciar Ethernet con DHCP
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("No se pudo obtener una IP mediante DHCP");
+    // Si falla la obtención de IP por DHCP, utiliza una IP fija
+    IPAddress ip(192, 168, 1, 177);
+    Ethernet.begin(mac, ip);
+  }
+  delay(1000);  // Espera a que la conexión esté lista
+
+  // Imprimir la IP asignada
+  Serial.print("Servidor iniciado, IP: ");
+  Serial.println(Ethernet.localIP());  // Imprimir la IP asignada en el puerto serial
+
+  server.begin();  // Iniciar el servidor
+}
+
+void loop() {
+  EthernetClient client = server.available();  // Esperar a que un cliente se conecte
+  if (client) {
+    String request = client.readStringUntil('\r');  // Leer la solicitud del cliente
+    client.flush();
+
+    if (request.indexOf("GET / ") >= 0) {
+      // Enviar la página HTML al cliente
+      sendHTML(client);
+    } else if (request.indexOf("GET /data") >= 0) {
+      // Enviar los datos JSON al cliente
+      sendData(client);
+    }
+    client.stop();  // Cerrar la conexión con el cliente
+  }
+
+  // Leer los valores de los pines analógicos
+  value1 = analogRead(analogPin1);
+  value2 = analogRead(analogPin2);
+}
+
+
+
+
+
+// Función para enviar la página HTML
+void sendHTML(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: text/html");
+  client.println("Connection: close");
+  client.println();
+
+  client.println(F("<html><head><title>Dashboard de Medidores</title>"));
+  client.println(F("<style>"));
+  client.println(F("body { font-family: Arial, sans-serif; background-color: #f4f4f4; color: #333; margin: 0; padding: 0; }"));
+  client.println(F(".dashboard { display: none; justify-content: space-around; align-items: center; padding: 20px; }"));
+  client.println(F(".panel { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); padding: 20px; width: 45%; }"));
+  client.println(F(".login-form { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEim23THhy9VBZw9rXHAPo3KqgKCvLg35cYGbULijq-JD8uE1FKsgjK2xp_IIuf8xD9u0NsyAyJT_uG2N-1p1MDg-0WlQY9mHGn-bfjvSoH4s21jniaR76BcQVR1VQBseW7-HX1MnK4IpzQB0x7HbXQ6X9M0TJ8vKEKjFVOpxe6ECizxNsNE1gNAas501iA/s1280/Diapositiva1.JPG'); background-size: cover; background-position: center; }"));
+  client.println(F(".login-form input { padding: 10px; margin: 5px; width: 200px; }"));
+  client.println(F(".login-form button { padding: 10px; margin-top: 10px; width: 220px; }"));
+  client.println(F(".error { color: red; display: none; }"));
+  
+  // Añadimos estilo para el indicador de alarma
+  client.println(F(".alarm-indicator {"));
+  client.println(F("width: 20px; height: 20px; border-radius: 50%; background-color: green; margin-top: 10px; }"));
+
+  client.println(F("</style>"));
+
+  client.println(F("<script>"));
+  client.println(F("function login() {"));
+  client.println(F("var user = document.getElementById('username').value;"));
+  client.println(F("var pass = document.getElementById('password').value;"));
+  client.println(F("if (user === 'Tenorio' && pass === 'Alcom123') {"));
+  client.println(F("document.querySelector('.login-form').style.display = 'none';"));
+  client.println(F("document.querySelector('.dashboard').style.display = 'flex';"));
+  client.println(F("} else {"));
+  client.println(F("document.getElementById('error-message').style.display = 'block';"));
+  client.println(F("}"));
+  client.println(F("}"));
+  client.println(F("</script>"));
+  client.println(F("</head><body>"));
+
+  client.println(F("<div class='login-form'>"));
+  client.println(F("<h2>Iniciar Sesion</h2>"));
+  client.println(F("<input type='text' id='username' placeholder='Usuario' />"));
+  client.println(F("<input type='password' id='password' placeholder='Password' />"));
+  client.println(F("<button onclick='login()'>Iniciar Sesion</button>"));
+  client.println(F("<p id='error-message' class='error'>Usuario o contraseña incorrectos</p>"));
+  client.println(F("</div>"));
+
+  client.println(F("<div class='dashboard'>"));
+  client.println(F("<div class='panel'><h2>Portada</h2>"));
+  client.println(F("<img src='https://lainholding.com/wp-content/uploads/2021/10/solucion-base-calidad-de-agua-compress-600x321.jpg' alt='Portada'></div>"));
+
+  client.println(F("<div class='panel'><h2>Flujo en Tiempo Real y Promedios</h2>"));
+  client.println(F("<div class='values'><div><strong>Flujo Medidor 1:</strong> <span id='value1'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 1:</strong> <span id='avg1'>0</span> L/min</div></div>"));
+  client.println(F("<div class='values'><div><strong>Flujo Medidor 2:</strong> <span id='value2'>0</span> L/min</div>"));
+  client.println(F("<div><strong>Promedio Medidor 2:</strong> <span id='avg2'>0</span> L/min</div></div>"));
+
+  client.println(F("<h3>Grafico de Flujo</h3><div id='chartContainer'><canvas id='myChart'></canvas></div>"));
+  client.println(F("<div class='alarm'><strong>Alarmas:</strong><div class='alarm-indicator' id='alarm'></div></div>"));
+  client.println(F("</div></div>"));
+
+  client.println(F("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>"));
+  client.println(F("<script>"));
+  client.println(F("var ctx = document.getElementById('myChart').getContext('2d');"));
+  client.println(F("var chart = new Chart(ctx, { type: 'line', data: { labels: [], datasets: [{ label: 'Flujo Medidor 1', borderColor: 'blue', data: [] }, { label: 'Flujo Medidor 2', borderColor: 'red', data: [] }] }, options: { scales: { x: { beginAtZero: true }, y: { beginAtZero: true } } } });"));
+
+  client.println(F("function updateData() {"));
+  client.println(F("fetch('/data').then(response => response.json()).then(data => {"));
+  client.println(F("document.getElementById('value1').innerText = data.value1;"));
+  client.println(F("document.getElementById('value2').innerText = data.value2;"));
+  client.println(F("document.getElementById('avg1').innerText = data.avg1;"));
+  client.println(F("document.getElementById('avg2').innerText = data.avg2;"));
+
+  client.println(F("chart.data.labels.push('');"));
+  client.println(F("chart.data.datasets[0].data.push(data.value1);"));
+  client.println(F("chart.data.datasets[1].data.push(data.value2);"));
+  client.println(F("if (chart.data.labels.length > 20) {"));
+  client.println(F("chart.data.labels.shift();"));
+  client.println(F("chart.data.datasets[0].data.shift();"));
+  client.println(F("chart.data.datasets[1].data.shift();"));
+  client.println(F("}"));
+  client.println(F("chart.update();"));
+
+  // Cambiar el color de la alarma
+  client.println(F("if (data.alarm) { document.getElementById('alarm').style.backgroundColor = 'red'; }"));
+  client.println(F("else { document.getElementById('alarm').style.backgroundColor = 'green'; }"));
+  client.println(F("});"));
+  client.println(F("}"));
+  client.println(F("setInterval(updateData, 5000);"));
+  client.println(F("</script></body></html>"));
+}
+
+
+// Función para enviar datos en formato JSON
+void sendData(EthernetClient client) {
+  client.println("HTTP/1.1 200 OK");
+  client.println("Content-Type: application/json");
+  client.println("Connection: close");
+  client.println();
+
+  float avg1 = value1 / 2.0;  // Promedio del medidor 1 (puedes ajustar la fórmula)
+  float avg2 = value2 / 2.0;  // Promedio del medidor 2 (puedes ajustar la fórmula)
+  bool alarm = (value1 < 1 || value2 < 1);  // Activar la alarma si alguno de los valores es menor que 100
+
+  // Enviar los datos en formato JSON
+  client.print("{\"value1\":");
+  client.print(value1);
+  client.print(",\"value2\":");
+  client.print(value2);
+  client.print(",\"avg1\":");
+  client.print(avg1);
+  client.print(",\"avg2\":");
+  client.print(avg2);
+  client.print(",\"alarm\":");
+  client.print(alarm);
+  client.println("}");
+}
